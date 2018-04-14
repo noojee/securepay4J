@@ -1,15 +1,18 @@
 package au.org.noojee.securepay.soapapi;
 
 import java.io.Serializable;
+import java.security.SecureRandom;
 import java.time.LocalDate;
+import java.util.Random;
 
 import org.apache.logging.log4j.util.Strings;
+import org.bouncycastle.crypto.generators.BCrypt;
 import org.javamoney.moneta.Money;
-import org.mindrot.jbcrypt.BCrypt;
 
 public class CreditCard implements Serializable
 {
 	private static final long serialVersionUID = 1L;
+	private static final Random RANDOM = new SecureRandom();
 
 	private String description;
 
@@ -199,7 +202,20 @@ public class CreditCard implements Serializable
 
 	public void generateCardID()
 	{
-		this.cardID = BCrypt.hashpw(this.cardNo + this.getExpiryDate(), BCrypt.gensalt(10));
+		this.cardID = BCrypt.generate(BCrypt.passwordToByteArray(this.cardNo.toCharArray()), getNextSalt(), 4).toString();
+		
+	}
+
+	/**
+	 * Returns a random salt to be used to hash a password.
+	 *
+	 * @return a 16 bytes random salt
+	 */
+	public static byte[] getNextSalt()
+	{
+		byte[] salt = new byte[16];
+		RANDOM.nextBytes(salt);
+		return salt;
 	}
 
 	public String getExpiryDate()
@@ -215,6 +231,17 @@ public class CreditCard implements Serializable
 	public String getCardID()
 	{
 		return cardID;
+	}
+
+	public void clearCardNo()
+	{
+		this.cardNo = null;
+
+	}
+
+	public void clearCVV()
+	{
+		this.CVV = null;
 	}
 
 }

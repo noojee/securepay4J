@@ -55,16 +55,16 @@ public class SecurePay
 		return now.format(format);
 	}
 
-	public void addPayor(CreditCard card)
-			throws MalformedURLException, SecurePayException
+	public void storeCard(CreditCard card)
+			throws  SecurePayException
 	{
 		String tokenRequest = this.generateAddPayorRequest(card);
 
 		sendRequest(tokenRequest);
 	}
 
-	public void updatePayor(CreditCard card)
-			throws MalformedURLException, SecurePayException
+	public void updateStoredCard(CreditCard card)
+			throws  SecurePayException
 	{
 		String tokenRequest = this.generateUpdatePayorRequest(card);
 
@@ -72,9 +72,9 @@ public class SecurePay
 
 	}
 
-	public SecurePayResponse debitPayor(CreditCard card, String transactionReference, Money amount) throws SecurePayException
+	public SecurePayResponse debitStoredCard(String cardId, String transactionReference, Money amount) throws SecurePayException
 	{
-		String request = generateDebitPayorRequest(card, transactionReference, amount);
+		String request = generateDebitPayorRequest(cardId, transactionReference, amount);
 
 		SecurePayResponse response = sendRequest(request);
 
@@ -83,6 +83,7 @@ public class SecurePay
 			case 0:
 			case 8:
 				response.setSuccessful();
+				response.setTransactionID(getXMLNodeValue(response.getHTTPResponseBody(), "txnID"));
 				break;
 		}
 
@@ -117,10 +118,10 @@ public class SecurePay
 		int responseCode = getXMLNodeValueAsInt(response.getResponseBody(), "responseCode");
 		String responseText = getXMLNodeValue(response.getResponseBody(), "responseText");
 
-		return new SecurePayResponse(responseCode, responseText);
+		return new SecurePayResponse(responseCode, responseText, response.getResponseBody());
 	}
 
-	String generateDebitPayorRequest(CreditCard card, String transactionReference, Money amount)
+	String generateDebitPayorRequest(String cardId, String transactionReference, Money amount)
 	{
 
 		Money amountInCents = amount.multiply(100);
@@ -132,7 +133,7 @@ public class SecurePay
 				+ " 		<PeriodicItem ID=\"1\">\n"
 				+ " 			<actionType>trigger</actionType>\n"
 				+ " 			<transactionReference>" + transactionReference + "</transactionReference>\n"
-				+ " 			<clientID>" + card.getCardID() + "</clientID>\n"
+				+ " 			<clientID>" + cardId + "</clientID>\n"
 				+ " 			<amount>" + amountInCents.getNumber().toString() + "</amount>\n"
 				+ " 		</PeriodicItem>\n"
 				+ " 	</PeriodicList>\n"

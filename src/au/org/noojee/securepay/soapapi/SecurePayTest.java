@@ -2,8 +2,6 @@ package au.org.noojee.securepay.soapapi;
 
 import static org.junit.Assert.fail;
 
-import java.net.MalformedURLException;
-
 import org.junit.Test;
 
 public class SecurePayTest
@@ -28,13 +26,27 @@ public class SecurePayTest
 		
 		try
 		{
-			System.out.println(card.getCardID());
-			securePay.addPayor( card);
-			securePay.updatePayor(card);
-			securePay.debitPayor(card, "INV: 1234", SecurePay.asMoney("25.08"));
+			System.out.println("CardID:" + card.getCardID());
+			securePay.storeCard(card);
+			
+			// Change the expiry date.
+			card.setExpiry(CCYear._2019, CCMonth.AUG);
+			
+			// update the stored card details.
+			securePay.updateStoredCard(card);
+			
+			card.clearCardNo();
+			card.clearCVV();
+			
+			SecurePayResponse response = securePay.debitStoredCard(card.getCardID(), "INV: 1234", SecurePay.asMoney("25.08"));
+			
+			if (response.isSuccessful())
+				System.out.println("Success: transactionID=" + response.getTransactionID());
+			else
+				System.out.println(response.toString());
 			
 		}
-		catch (MalformedURLException | SecurePayException e)
+		catch (SecurePayException e)
 		{
 			
 			System.out.println("Exception: " + e.getMessage());
