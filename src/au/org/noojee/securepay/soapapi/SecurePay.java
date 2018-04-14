@@ -203,18 +203,6 @@ public class SecurePay
 				+ "</MerchantInfo>\n";
 	}
 
-	TokenResponse parseTokenResponse(String response) throws SecurePayException
-	{
-
-		String responseCode = getXMLNodeValue(response, "responseCode");
-
-		String responseText = getXMLNodeValue(response, "responseText");
-		String successful = getXMLNodeValue(response, "successful");
-		String tokenValue = getXMLNodeValue(response, "tokenValue");
-
-		return new TokenResponse(responseCode, responseText, successful, tokenValue);
-
-	}
 
 	int getXMLNodeValueAsInt(String xml, String node) throws SecurePayException
 	{
