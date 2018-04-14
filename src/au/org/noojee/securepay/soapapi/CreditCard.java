@@ -16,9 +16,7 @@ public class CreditCard implements Serializable
 
 	private String description;
 
-	private CreditCardCompany creditCardType;
-
-	private String token;
+	private CreditCardIssuer creditCardIssuer;
 
 	// This value is normally blank except momentarily during data entry.
 	private String cardNo;
@@ -55,7 +53,7 @@ public class CreditCard implements Serializable
 			return false;
 		}
 
-		CreditCardCompany cc = CreditCardCompany.gleanCompany(card);
+		CreditCardIssuer cc = CreditCardIssuer.gleanCompany(card);
 		if (cc == null)
 			return false;
 
@@ -128,10 +126,6 @@ public class CreditCard implements Serializable
 			return true;
 	}
 
-	public boolean hasToken()
-	{
-		return Strings.isBlank(this.token);
-	}
 
 	public Money calculateTotalFee(Money unpaid, MerchantRate rate)
 	{
@@ -153,14 +147,9 @@ public class CreditCard implements Serializable
 		return description;
 	}
 
-	public CreditCardCompany getCreditCardType()
+	public CreditCardIssuer getCreditCardIssuer()
 	{
-		return creditCardType;
-	}
-
-	public String getToken()
-	{
-		return token;
+		return creditCardIssuer;
 	}
 
 	public String getCardNo()
@@ -195,8 +184,8 @@ public class CreditCard implements Serializable
 
 	public void setExpiry(CCYear ccYear, CCMonth ccMonth)
 	{
-		this.expiryYear = ccYear;
-		this.expiryMonth = ccMonth;
+		this.setExpiryYear(ccYear);
+		this.setExpiryMonth(ccMonth);
 
 	}
 
@@ -232,6 +221,11 @@ public class CreditCard implements Serializable
 	{
 		return cardID;
 	}
+	
+	public boolean hasCardID()
+	{
+		return !Strings.isBlank(cardID);
+	}
 
 	public void clearCardNo()
 	{
@@ -241,7 +235,39 @@ public class CreditCard implements Serializable
 
 	public void clearCVV()
 	{
-		this.CVV = null;
+		this.setCVV(null);
+	}
+
+	public void setCreditCardIssuer(CreditCardIssuer creditCardIssuer)
+	{
+		this.creditCardIssuer = creditCardIssuer;
+		
+	}
+
+	public void setLast4Digits(String last4Digits)
+	{
+		this.last4Digits = last4Digits;
+	}
+
+	public void setExpiryMonth(CCMonth expiryMonth)
+	{
+		this.expiryMonth = expiryMonth;
+	}
+
+	public void setExpiryYear(CCYear expiryYear)
+	{
+		this.expiryYear = expiryYear;
+	}
+
+	public void setCVV(String cVV)
+	{
+		CVV = cVV;
+	}
+
+	public Object getStatus()
+	{
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

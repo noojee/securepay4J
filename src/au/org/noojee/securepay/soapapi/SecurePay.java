@@ -20,14 +20,9 @@ public class SecurePay
 
 	private Merchant merchant;
 
-	SecurePay(Merchant merchant)
+	public SecurePay(Merchant merchant)
 	{
 		this.merchant = merchant;
-	}
-
-	public void connect()
-	{
-		// TODO Auto-generated method stub
 	}
 
 	public SecurePayResponse debit(CreditCard card, Money amount)

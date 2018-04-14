@@ -3,7 +3,7 @@ package au.org.noojee.securepay.soapapi;
 /**
  * enum for card company specifics
  */
-public enum CreditCardCompany
+public enum CreditCardIssuer
 {
 
 	VISA("^4[0-9]{12}(?:[0-9]{3})?$", "VISA"), MASTERCARD("^5[1-5][0-9]{14}$", "MASTER"), AMEX("^3[47][0-9]{13}$",
@@ -13,7 +13,7 @@ public enum CreditCardCompany
 	private String regex;
 	private String issuerName;
 
-	CreditCardCompany(String regex, String issuerName)
+	CreditCardIssuer(String regex, String issuerName)
 	{
 		this.regex = regex;
 		this.issuerName = issuerName;
@@ -35,9 +35,9 @@ public enum CreditCardCompany
 	 * @param card
 	 * @return
 	 */
-	public static CreditCardCompany gleanCompany(String card)
+	public static CreditCardIssuer gleanCompany(String card)
 	{
-		for (CreditCardCompany cc : CreditCardCompany.values())
+		for (CreditCardIssuer cc : CreditCardIssuer.values())
 		{
 			if (cc.matches(card))
 			{
@@ -53,9 +53,9 @@ public enum CreditCardCompany
 	 * @param issuerName
 	 * @return
 	 */
-	public static CreditCardCompany gleanCompanyByIssuerName(String issuerName)
+	public static CreditCardIssuer gleanCompanyByIssuerName(String issuerName)
 	{
-		for (CreditCardCompany cc : CreditCardCompany.values())
+		for (CreditCardIssuer cc : CreditCardIssuer.values())
 		{
 			if (cc.getIssuerName().equals(issuerName))
 			{
