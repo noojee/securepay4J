@@ -9,8 +9,12 @@ import java.util.UUID;
 
 import javax.money.CurrencyUnit;
 import javax.money.Monetary;
+import javax.money.format.AmountFormatQueryBuilder;
+import javax.money.format.MonetaryAmountFormat;
+import javax.money.format.MonetaryFormats;
 
 import org.javamoney.moneta.Money;
+import org.javamoney.moneta.format.CurrencyStyle;
 
 public class SecurePay
 {
@@ -23,13 +27,6 @@ public class SecurePay
 	public SecurePay(Merchant merchant)
 	{
 		this.merchant = merchant;
-	}
-
-	public SecurePayResponse debit(CreditCard card, Money amount)
-	{
-		SecurePayResponse response = null;
-
-		return response;
 	}
 
 	String getMessageID()
@@ -50,24 +47,36 @@ public class SecurePay
 		return now.format(format);
 	}
 
-	public void storeCard(CreditCard card)
-			throws  SecurePayException
+	public SecurePayResponse storeCard(CreditCard card)
+			throws SecurePayException
 	{
-		String tokenRequest = this.generateAddPayorRequest(card);
+		String request = this.generateAddPayorRequest(card);
 
-		sendRequest(tokenRequest);
-	}
+		SecurePayResponse response = sendRequest(request);
 
-	public void updateStoredCard(CreditCard card)
-			throws  SecurePayException
-	{
-		String tokenRequest = this.generateUpdatePayorRequest(card);
+		if (response.getResponseCode() == 0)
+			response.setSuccessful();
 
-		sendRequest(tokenRequest);
+		return response;
 
 	}
 
-	public SecurePayResponse debitStoredCard(String cardId, String transactionReference, Money amount) throws SecurePayException
+	public SecurePayResponse updateStoredCard(CreditCard card)
+			throws SecurePayException
+	{
+		String request = this.generateUpdatePayorRequest(card);
+
+		SecurePayResponse response = sendRequest(request);
+
+		if (response.getResponseCode() == 0)
+			response.setSuccessful();
+
+		return response;
+
+	}
+
+	public SecurePayResponse debitStoredCard(String cardId, String transactionReference, Money amount)
+			throws SecurePayException
 	{
 		String request = generateDebitPayorRequest(cardId, transactionReference, amount);
 
@@ -129,7 +138,7 @@ public class SecurePay
 				+ " 			<actionType>trigger</actionType>\n"
 				+ " 			<transactionReference>" + transactionReference + "</transactionReference>\n"
 				+ " 			<clientID>" + cardId + "</clientID>\n"
-				+ " 			<amount>" + amountInCents.getNumber().toString() + "</amount>\n"
+				+ " 			<amount>" + format(amountInCents, "0") + "</amount>\n"
 				+ " 		</PeriodicItem>\n"
 				+ " 	</PeriodicList>\n"
 				+ " </Periodic>\n"
@@ -148,7 +157,7 @@ public class SecurePay
 				+ "				<actionType>add</actionType>\n"
 				+ "				<clientID>" + card.getCardID() + "</clientID>\n"
 				+ "				<CreditCardInfo>\n"
-				+ "					<cardNumber>" + card.getCardNo() + "</cardNumber>\n"
+				+ "					<cardNumber>" + card.getStrippedCardNo() + "</cardNumber>\n"
 				+ "					<expiryDate>" + card.getExpiryDate() + "</expiryDate>\n"
 				+ "				</CreditCardInfo>\n"
 				+ "				<amount>1</amount>\n"
@@ -171,7 +180,7 @@ public class SecurePay
 				+ "				<actionType>edit</actionType>\n"
 				+ "				<clientID>" + card.getCardID() + "</clientID>\n"
 				+ "				<CreditCardInfo>\n"
-				+ "					<cardNumber>" + card.getCardNo() + "</cardNumber>\n"
+				+ "					<cardNumber>" + card.getStrippedCardNo() + "</cardNumber>\n"
 				+ "					<expiryDate>" + card.getExpiryDate() + "</expiryDate>\n"
 				+ "				</CreditCardInfo>\n"
 				+ "				<periodicType>4</periodicType>\n"
@@ -198,7 +207,6 @@ public class SecurePay
 				+ "		<password>" + merchant.getPassword() + "</password>\n"
 				+ "</MerchantInfo>\n";
 	}
-
 
 	int getXMLNodeValueAsInt(String xml, String node) throws SecurePayException
 	{
@@ -231,5 +239,21 @@ public class SecurePay
 	{
 		return Money.of(new BigDecimal(value), currencyUnit);
 	}
+	
+	private String format(Money money, String pattern)
+	{
+		MonetaryAmountFormat format = MonetaryFormats.getAmountFormat(
+				AmountFormatQueryBuilder.of(Locale.ENGLISH)
+				.set(CurrencyStyle.NAME).set("pattern", pattern).build());
+		
+		String result;
+		if (money == null)
+			result = "";
+		else
+			result = format.format(money);
+		return result;
 
 	}
+
+
+}

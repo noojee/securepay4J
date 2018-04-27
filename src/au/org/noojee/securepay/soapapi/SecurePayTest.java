@@ -6,7 +6,6 @@ import org.junit.Test;
 
 public class SecurePayTest
 {
-
 	@Test
 	public void test() throws SecurePayException
 	{

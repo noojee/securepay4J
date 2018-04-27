@@ -9,6 +9,12 @@ public enum CCYear
 		return Integer.valueOf(this.name().substring(1)) - 2000;
 	}
 	
+	public int getYear()
+	{
+		return Integer.valueOf(this.name().substring(1));
+	}
+
+	
 	
 	
 }

@@ -14,8 +14,6 @@ public class CreditCard implements Serializable
 	private static final long serialVersionUID = 1L;
 	private static final Random RANDOM = new SecureRandom();
 
-	private String description;
-
 	private CreditCardIssuer creditCardIssuer;
 
 	// This value is normally blank except momentarily during data entry.
@@ -126,7 +124,6 @@ public class CreditCard implements Serializable
 			return true;
 	}
 
-
 	public Money calculateTotalFee(Money unpaid, MerchantRate rate)
 	{
 		return rate.addMargin(unpaid);
@@ -142,11 +139,6 @@ public class CreditCard implements Serializable
 		return serialVersionUID;
 	}
 
-	public String getDescription()
-	{
-		return description;
-	}
-
 	public CreditCardIssuer getCreditCardIssuer()
 	{
 		return creditCardIssuer;
@@ -160,6 +152,16 @@ public class CreditCard implements Serializable
 	public void setCardNo(String cardNo)
 	{
 		this.cardNo = cardNo;
+
+		if (cardNo != null)
+		{
+			this.cardNo = cardNo.trim();
+			String stripped = getStrippedCardNo();
+
+			if (stripped.length() > 4)
+				this.last4Digits = stripped.substring(stripped.length() - 4);
+		}
+
 	}
 
 	public String getCVV()
@@ -191,8 +193,9 @@ public class CreditCard implements Serializable
 
 	public void generateCardID()
 	{
-		this.cardID = BCrypt.generate(BCrypt.passwordToByteArray(this.cardNo.toCharArray()), getNextSalt(), 4).toString();
-		
+		this.cardID = BCrypt
+				.generate(BCrypt.passwordToByteArray(this.getStrippedCardNo().toCharArray()), getNextSalt(), 4)
+				.toString();
 	}
 
 	/**
@@ -221,7 +224,7 @@ public class CreditCard implements Serializable
 	{
 		return cardID;
 	}
-	
+
 	public boolean hasCardID()
 	{
 		return !Strings.isBlank(cardID);
@@ -241,13 +244,9 @@ public class CreditCard implements Serializable
 	public void setCreditCardIssuer(CreditCardIssuer creditCardIssuer)
 	{
 		this.creditCardIssuer = creditCardIssuer;
-		
+
 	}
 
-	public void setLast4Digits(String last4Digits)
-	{
-		this.last4Digits = last4Digits;
-	}
 
 	public void setExpiryMonth(CCMonth expiryMonth)
 	{
@@ -264,10 +263,9 @@ public class CreditCard implements Serializable
 		CVV = cVV;
 	}
 
-	public Object getStatus()
+	public String getStrippedCardNo()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return cardNo == null ? "" : cardNo.replace(" ", "");
 	}
 
 }

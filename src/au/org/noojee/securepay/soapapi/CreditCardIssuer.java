@@ -24,7 +24,7 @@ public enum CreditCardIssuer
 		return card.matches(this.regex);
 	}
 
-	public String getIssuerName()
+	public String getName()
 	{
 		return this.issuerName;
 	}
@@ -57,7 +57,7 @@ public enum CreditCardIssuer
 	{
 		for (CreditCardIssuer cc : CreditCardIssuer.values())
 		{
-			if (cc.getIssuerName().equals(issuerName))
+			if (cc.getName().equals(issuerName))
 			{
 				return cc;
 			}

@@ -1,7 +1,10 @@
 package au.org.noojee.securepay.soapapi;
 
-public class SecurePayResponse
+import java.io.Serializable;
+
+public class SecurePayResponse implements Serializable
 {
+	private static final long serialVersionUID = 1L;
 	private int responseCode;
 	private String responseText;
 
@@ -16,6 +19,7 @@ public class SecurePayResponse
 		this.responseCode = responseCode;
 		this.responseText = responseText;
 		this.httpResponseBody = httpResponseBody;
+		
 	}
 
 	public void setSuccessful()
