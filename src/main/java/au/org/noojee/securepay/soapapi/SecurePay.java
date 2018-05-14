@@ -222,7 +222,8 @@ public class SecurePay
 
 		if (start == -1 || end == -1)
 
-			throw new SecurePayException("The node: '" + node + "' was not found in the response.");
+			throw new SecurePayException("The node: '" + node + "' was not found in the response."
+					+ "The xml content was: " + xml);
 
 		String nodeValue = xml.substring(start + node.length() + 2, end);
 

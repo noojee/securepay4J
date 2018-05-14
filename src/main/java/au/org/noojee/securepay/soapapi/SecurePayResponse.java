@@ -5,7 +5,7 @@ import java.io.Serializable;
 public class SecurePayResponse implements Serializable
 {
 	private static final long serialVersionUID = 1L;
-	private int responseCode;
+	private int responseCode = -1;
 	private String responseText;
 
 	private boolean successful = false;
