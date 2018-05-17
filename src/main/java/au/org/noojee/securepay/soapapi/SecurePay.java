@@ -74,6 +74,24 @@ public class SecurePay
 		return response;
 
 	}
+	
+	/**
+	 * Check if the securepay servers are up and responding.
+	 * @return
+	 * @throws SecurePayException
+	 */
+	public SecurePayResponse pingServer()
+			throws SecurePayException
+	{
+		String request = this.generateEchoRequest();
+
+		SecurePayResponse response = _sendRequest(request);
+		response.setSuccessful();
+
+		return response;
+
+	}
+
 
 	public SecurePayResponse debitStoredCard(String cardId, String transactionReference, Money amount)
 			throws SecurePayException
@@ -97,6 +115,12 @@ public class SecurePay
 
 	private SecurePayResponse sendRequest(String tokenRequest) throws SecurePayException
 	{
+		return _sendRequest(tokenRequest);
+	}
+	
+
+	private SecurePayResponse _sendRequest(String tokenRequest) throws SecurePayException
+	{
 		SecurePayGateway gateway = SecurePayGateway.getInstance();
 		gateway.setBaseURL(merchant.getPeriodicBaseURL());
 
@@ -118,12 +142,10 @@ public class SecurePay
 
 			throw new SecurePayException(statusCode, description);
 		}
-
-		int responseCode = getXMLNodeValueAsInt(response.getResponseBody(), "responseCode");
-		String responseText = getXMLNodeValue(response.getResponseBody(), "responseText");
-
-		return new SecurePayResponse(responseCode, responseText, response.getResponseBody());
+		
+		return new SecurePayResponse(response.getResponseBody());
 	}
+
 
 	String generateDebitPayorRequest(String cardId, String transactionReference, Money amount)
 	{
@@ -208,14 +230,38 @@ public class SecurePay
 				+ "</MerchantInfo>\n";
 	}
 
-	int getXMLNodeValueAsInt(String xml, String node) throws SecurePayException
+	
+	
+	/**
+	 * Use to determine if the api servers are up and we have the correct configuration.
+	 * @return
+	 */
+	private String generateEchoRequest()
+	{
+		return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" 
+				+ "<SecurePayMessage>\n" 
+				+ "	<MessageInfo>\n" 
+				+ " 		<messageID>8af793f9af34bea0cf40f5fb79f383</messageID>\n" 
+				+ " 		<messageTimestamp>20042403095953349000+660</messageTimestamp>\n" 
+				+ " 		<timeoutValue>60</timeoutValue>\n" 
+				+ " 		<apiVersion>" + API_VERSION + "</apiVersion>\n" 
+				+ "	</MessageInfo>\n"  
+				+ "<MerchantInfo>\n"
+				+ "		<merchantID>" + merchant.getID() + "</merchantID>\n"
+				+ "		<password>" + merchant.getPassword() + "</password>\n"
+				+ "</MerchantInfo>\n"
+				+ "<RequestType>Echo</RequestType>\n" 
+				+ "</SecurePayMessage>";
+	}
+	
+	static int getXMLNodeValueAsInt(String xml, String node) throws SecurePayException
 	{
 		String value = getXMLNodeValue(xml, node);
 
 		return Integer.valueOf(value);
 	}
 
-	String getXMLNodeValue(String xml, String node) throws SecurePayException
+	static String getXMLNodeValue(String xml, String node) throws SecurePayException
 	{
 		int start = xml.indexOf("<" + node + ">");
 		int end = xml.lastIndexOf("</" + node + ">");

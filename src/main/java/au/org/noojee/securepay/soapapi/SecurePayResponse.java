@@ -14,14 +14,11 @@ public class SecurePayResponse implements Serializable
 	// When the response is for a payment transaction then this will hold the resulting transaction id.
 	private String transactionID;
 
-	public SecurePayResponse(int responseCode, String responseText, String httpResponseBody)
+	public SecurePayResponse(String httpResponseBody)
 	{
-		this.responseCode = responseCode;
-		this.responseText = responseText;
 		this.httpResponseBody = httpResponseBody;
 		
 	}
-
 	public void setSuccessful()
 	{
 		this.successful = true;
@@ -32,13 +29,17 @@ public class SecurePayResponse implements Serializable
 		return transactionID;
 	}
 	
-	public int getResponseCode()
+	public int getResponseCode() throws SecurePayException
 	{
+		this.responseCode =  SecurePay.getXMLNodeValueAsInt(httpResponseBody, "responseCode");
+
 		return responseCode;
 	}
 
-	public String getResponseText()
+	public String getResponseText() throws SecurePayException
 	{
+		this.responseText = SecurePay.getXMLNodeValue(httpResponseBody, "responseText");
+
 		return responseText;
 	}
 
