@@ -7,7 +7,7 @@ import org.apache.logging.log4j.Logger;
 public class HTTPResponse
 {
 	@SuppressWarnings("unused")
-	private static Logger logger = LogManager.getLogger();
+	private Logger logger = LogManager.getLogger();
 	private int responseCode;
 	private String responseMessage;
 	private String responseBody;
