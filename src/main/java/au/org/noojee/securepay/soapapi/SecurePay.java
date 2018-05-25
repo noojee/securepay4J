@@ -74,9 +74,10 @@ public class SecurePay
 		return response;
 
 	}
-	
+
 	/**
 	 * Check if the securepay servers are up and responding.
+	 * 
 	 * @return
 	 * @throws SecurePayException
 	 */
@@ -92,7 +93,14 @@ public class SecurePay
 
 	}
 
-
+	/**
+	 * Debit a credit card that was previously stored.
+	 * @param cardId
+	 * @param transactionReference
+	 * @param amount
+	 * @return
+	 * @throws SecurePayException
+	 */
 	public SecurePayResponse debitStoredCard(String cardId, String transactionReference, Money amount)
 			throws SecurePayException
 	{
@@ -113,11 +121,41 @@ public class SecurePay
 
 	}
 
+	/**
+	 * Directly debit a credit card.
+	 * @param CardNo
+	 * @param expiryMonth
+	 * @param expiryYear
+	 * @param transactionReference
+	 * @param amount
+	 * @return
+	 * @throws SecurePayException
+	 */
+	public SecurePayResponse debitCard(String CardNo, CCMonth expiryMonth, CCYear expiryYear,
+			String transactionReference, Money amount)
+			throws SecurePayException
+	{
+		String request = generateDebitRequest(CardNo, expiryMonth, expiryYear, transactionReference, amount);
+
+		SecurePayResponse response = sendRequest(request);
+
+		switch (response.getResponseCode())
+		{
+			case 0:
+			case 8:
+				response.setSuccessful();
+				response.setTransactionID(getXMLNodeValue(response.getHTTPResponseBody(), "txnID"));
+				break;
+		}
+
+		return response;
+
+	}
+
 	private SecurePayResponse sendRequest(String tokenRequest) throws SecurePayException
 	{
 		return _sendRequest(tokenRequest);
 	}
-	
 
 	private SecurePayResponse _sendRequest(String tokenRequest) throws SecurePayException
 	{
@@ -142,10 +180,41 @@ public class SecurePay
 
 			throw new SecurePayException(statusCode, description);
 		}
-		
+
 		return new SecurePayResponse(response.getResponseBody());
 	}
 
+	String generateDebitRequest(String cardNo, CCMonth expiryMonth, CCYear expiryYear, String transactionReference,
+			Money amount)
+	{
+
+		Money amountInCents = amount.multiply(100);
+
+		String request = getXMLHeader()
+				
+
+				+ "<RequestType>Payment</RequestType>\n" 
+				+ "<Payment>\n" 
+				+ " 	<TxnList count=\"1\">\n" 
+				+ " 		<Txn ID=\"1\">\n" 
+				+ "		 	<txnType>0</txnType>\n" 
+				+ " 			<txnSource>23</txnSource>\n" 
+				+ " 			<amount>" + format(amountInCents, "0") + "</amount>\n" 
+				+ " 			<recurring>no</recurring>\n" 
+				+ " 			<currency>AUD</currency>\n" 
+				+ " 			<purchaseOrderNo>" + transactionReference + "</purchaseOrderNo>\n" 
+				+ " 			<CreditCardInfo>\n" 
+				+ " 				<cardNumber>" + cardNo + "</cardNumber>\n" 
+				+ " 				<expiryDate>" + expiryMonth.getMonth() + "/" + expiryYear.toInt() + "</expiryDate>\n" 
+				+ " 			</CreditCardInfo>\n" 
+				+ " 		</Txn>\n" 
+				+ " 	</TxnList>\n" 
+				+ "</Payment>\n" 
+				+ "</SecurePayMessage>";
+
+		return request;
+
+	}
 
 	String generateDebitPayorRequest(String cardId, String transactionReference, Money amount)
 	{
@@ -230,30 +299,29 @@ public class SecurePay
 				+ "</MerchantInfo>\n";
 	}
 
-	
-	
 	/**
 	 * Use to determine if the api servers are up and we have the correct configuration.
+	 * 
 	 * @return
 	 */
 	private String generateEchoRequest()
 	{
-		return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" 
-				+ "<SecurePayMessage>\n" 
-				+ "	<MessageInfo>\n" 
-				+ " 		<messageID>8af793f9af34bea0cf40f5fb79f383</messageID>\n" 
-				+ " 		<messageTimestamp>20042403095953349000+660</messageTimestamp>\n" 
-				+ " 		<timeoutValue>60</timeoutValue>\n" 
-				+ " 		<apiVersion>" + API_VERSION + "</apiVersion>\n" 
-				+ "	</MessageInfo>\n"  
+		return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+				+ "<SecurePayMessage>\n"
+				+ "	<MessageInfo>\n"
+				+ " 		<messageID>8af793f9af34bea0cf40f5fb79f383</messageID>\n"
+				+ " 		<messageTimestamp>20042403095953349000+660</messageTimestamp>\n"
+				+ " 		<timeoutValue>60</timeoutValue>\n"
+				+ " 		<apiVersion>" + API_VERSION + "</apiVersion>\n"
+				+ "	</MessageInfo>\n"
 				+ "<MerchantInfo>\n"
 				+ "		<merchantID>" + merchant.getID() + "</merchantID>\n"
 				+ "		<password>" + merchant.getPassword() + "</password>\n"
 				+ "</MerchantInfo>\n"
-				+ "<RequestType>Echo</RequestType>\n" 
+				+ "<RequestType>Echo</RequestType>\n"
 				+ "</SecurePayMessage>";
 	}
-	
+
 	static int getXMLNodeValueAsInt(String xml, String node) throws SecurePayException
 	{
 		String value = getXMLNodeValue(xml, node);
@@ -286,13 +354,13 @@ public class SecurePay
 	{
 		return Money.of(new BigDecimal(value), currencyUnit);
 	}
-	
+
 	private String format(Money money, String pattern)
 	{
 		MonetaryAmountFormat format = MonetaryFormats.getAmountFormat(
 				AmountFormatQueryBuilder.of(Locale.ENGLISH)
-				.set(CurrencyStyle.NAME).set("pattern", pattern).build());
-		
+						.set(CurrencyStyle.NAME).set("pattern", pattern).build());
+
 		String result;
 		if (money == null)
 			result = "";
@@ -301,6 +369,5 @@ public class SecurePay
 		return result;
 
 	}
-
 
 }
