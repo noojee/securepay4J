@@ -51,8 +51,9 @@ public class SecurePay
 			throws SecurePayException
 	{
 		String request = this.generateAddPayorRequest(card);
+		
 
-		SecurePayResponse response = sendRequest(request);
+		SecurePayResponse response = sendRequest(merchant.getPeriodicBaseURL(), request);
 
 		if (response.getResponseCode() == 0)
 			response.setSuccessful();
@@ -65,8 +66,9 @@ public class SecurePay
 			throws SecurePayException
 	{
 		String request = this.generateUpdatePayorRequest(card);
+		
 
-		SecurePayResponse response = sendRequest(request);
+		SecurePayResponse response = sendRequest(merchant.getPeriodicBaseURL(), request);
 
 		if (response.getResponseCode() == 0)
 			response.setSuccessful();
@@ -81,17 +83,38 @@ public class SecurePay
 	 * @return
 	 * @throws SecurePayException
 	 */
-	public SecurePayResponse pingServer()
+	public SecurePayResponse pingPaymentServer()
 			throws SecurePayException
 	{
 		String request = this.generateEchoRequest();
+		
 
-		SecurePayResponse response = _sendRequest(request);
+		SecurePayResponse response = _sendRequest(merchant.getPaymentBaseURL(), request);
 		response.setSuccessful();
 
 		return response;
 
 	}
+	
+	/**
+	 * Check if the securepay servers are up and responding.
+	 * 
+	 * @return
+	 * @throws SecurePayException
+	 */
+	public SecurePayResponse pingPeriodicServer()
+			throws SecurePayException
+	{
+		String request = this.generateEchoRequest();
+		
+
+		SecurePayResponse response = _sendRequest(merchant.getPeriodicBaseURL(), request);
+		response.setSuccessful();
+
+		return response;
+
+	}
+
 
 	/**
 	 * Debit a credit card that was previously stored.
@@ -106,7 +129,7 @@ public class SecurePay
 	{
 		String request = generateDebitPayorRequest(cardId, transactionReference, amount);
 
-		SecurePayResponse response = sendRequest(request);
+		SecurePayResponse response = sendRequest(merchant.getPeriodicBaseURL(), request);
 
 		switch (response.getResponseCode())
 		{
@@ -131,13 +154,12 @@ public class SecurePay
 	 * @return
 	 * @throws SecurePayException
 	 */
-	public SecurePayResponse debitCard(String CardNo, CCMonth expiryMonth, CCYear expiryYear,
-			String transactionReference, Money amount)
+	public SecurePayResponse debitCard(CreditCard creditCard, String transactionReference, Money amount)
 			throws SecurePayException
 	{
-		String request = generateDebitRequest(CardNo, expiryMonth, expiryYear, transactionReference, amount);
+		String request = generateDebitRequest(creditCard, transactionReference, amount);
 
-		SecurePayResponse response = sendRequest(request);
+		SecurePayResponse response = sendRequest(merchant.getPaymentBaseURL(), request);
 
 		switch (response.getResponseCode())
 		{
@@ -152,15 +174,15 @@ public class SecurePay
 
 	}
 
-	private SecurePayResponse sendRequest(String tokenRequest) throws SecurePayException
+	private SecurePayResponse sendRequest(String baseURL, String tokenRequest) throws SecurePayException
 	{
-		return _sendRequest(tokenRequest);
+		return _sendRequest(baseURL, tokenRequest);
 	}
 
-	private SecurePayResponse _sendRequest(String tokenRequest) throws SecurePayException
+	private SecurePayResponse _sendRequest(String baseURL, String tokenRequest) throws SecurePayException
 	{
 		SecurePayGateway gateway = SecurePayGateway.getInstance();
-		gateway.setBaseURL(merchant.getPeriodicBaseURL());
+		gateway.setBaseURL(baseURL);
 
 		HTTPResponse response;
 		try
@@ -184,7 +206,7 @@ public class SecurePay
 		return new SecurePayResponse(response.getResponseBody());
 	}
 
-	String generateDebitRequest(String cardNo, CCMonth expiryMonth, CCYear expiryYear, String transactionReference,
+	String generateDebitRequest(CreditCard creditCard, String transactionReference,
 			Money amount)
 	{
 
@@ -204,8 +226,8 @@ public class SecurePay
 				+ " 			<currency>AUD</currency>\n" 
 				+ " 			<purchaseOrderNo>" + transactionReference + "</purchaseOrderNo>\n" 
 				+ " 			<CreditCardInfo>\n" 
-				+ " 				<cardNumber>" + cardNo + "</cardNumber>\n" 
-				+ " 				<expiryDate>" + expiryMonth.getMonth() + "/" + expiryYear.toInt() + "</expiryDate>\n" 
+				+ " 				<cardNumber>" + creditCard.getCardNo() + "</cardNumber>\n" 
+				+ " 				<expiryDate>" + creditCard.getExpiryMonth().getMonth() + "/" + creditCard.getExpiryYear().toInt() + "</expiryDate>\n" 
 				+ " 			</CreditCardInfo>\n" 
 				+ " 		</Txn>\n" 
 				+ " 	</TxnList>\n" 

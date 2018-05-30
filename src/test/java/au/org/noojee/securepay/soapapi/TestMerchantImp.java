@@ -26,6 +26,12 @@ public class TestMerchantImp implements Merchant
 	}
 
 	@Override
+	public String getPaymentBaseURL()
+	{
+		return "https://test.api.securepay.com.au/xmlapi/payment";
+	}
+
+	@Override
 	public int getZoneOffsetMinutes()
 	{
 		ZoneId zone = ZoneId.of("Australia/Victoria");

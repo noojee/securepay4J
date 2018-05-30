@@ -27,4 +27,9 @@ public enum CCMonth
 	{
 		return Integer.valueOf(month);
 	}
+	
+	public String toString()
+	{
+		return name() + " (" +  month + ")";
+	}
 }

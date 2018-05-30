@@ -14,6 +14,10 @@ public enum CCYear
 		return Integer.valueOf(this.name().substring(1));
 	}
 
+	public String toString()
+	{
+		return name().substring(1);
+	}
 	
 	
 	

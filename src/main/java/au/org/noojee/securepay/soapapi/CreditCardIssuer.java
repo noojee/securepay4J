@@ -32,14 +32,14 @@ public enum CreditCardIssuer
 	/**
 	 * get an enum from a card number
 	 * 
-	 * @param card
+	 * @param creditCard.getCardNo()
 	 * @return
 	 */
-	public static CreditCardIssuer gleanCompany(String card)
+	public static CreditCardIssuer gleanIssuer(CreditCard creditCard)
 	{
 		for (CreditCardIssuer cc : CreditCardIssuer.values())
 		{
-			if (cc.matches(card))
+			if (cc.matches(creditCard.getCardNo()))
 			{
 				return cc;
 			}
@@ -53,7 +53,7 @@ public enum CreditCardIssuer
 	 * @param issuerName
 	 * @return
 	 */
-	public static CreditCardIssuer gleanCompanyByIssuerName(String issuerName)
+	public static CreditCardIssuer getIssuerByName(String issuerName)
 	{
 		for (CreditCardIssuer cc : CreditCardIssuer.values())
 		{

@@ -1,6 +1,5 @@
 package au.org.noojee.securepay.soapapi;
 
-import java.io.Serializable;
 import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.util.Random;
@@ -9,17 +8,16 @@ import org.apache.logging.log4j.util.Strings;
 import org.bouncycastle.crypto.generators.BCrypt;
 import org.javamoney.moneta.Money;
 
-public class CreditCard implements Serializable
+public class CreditCard 
 {
-	private static final long serialVersionUID = 1L;
 	private static final Random RANDOM = new SecureRandom();
 
 	private CreditCardIssuer creditCardIssuer;
 
 	// This value is normally blank except momentarily during data entry.
-	private String cardNo;
+	transient private String cardNo;
 	// as above.
-	private String CVV;
+	transient private String CVV;
 
 	private String last4Digits;
 
@@ -27,10 +25,20 @@ public class CreditCard implements Serializable
 	private CCYear expiryYear;
 
 	/**
-	 * A one way has of the cc no. and expiry date to uniquely identify this card when interacting with the payment
+	 * A one way hash of the cc no. and expiry date to uniquely identify this card when interacting with the payment
 	 * gateway.
 	 */
 	private String cardID;
+	
+	
+	public CreditCard()
+	{
+	}
+	
+	public CreditCard(String cardNo)
+	{
+		setCardNo(cardNo);
+	}
 
 	/**
 	 * Checks if the field is a valid credit card number.
@@ -38,20 +46,20 @@ public class CreditCard implements Serializable
 	 * @param card The card number to validate.
 	 * @return Whether the card number is valid.
 	 */
-	public static boolean isValidCardNo(final String cardNo)
+	public static boolean isValidCardNo(String cardNo)
 	{
-		String card = cardNo.replaceAll("[^0-9]+", ""); // remove all non-numerics
-		if ((card == null) || (card.length() < 13) || (card.length() > 19))
+		cardNo = cardNo.replaceAll("[^0-9]+", ""); // remove all non-numerics
+		if ((cardNo == null) || (cardNo.length() < 13) || (cardNo.length() > 19))
 		{
 			return false;
 		}
 
-		if (!luhnCheck(card))
+		if (!luhnCheck(cardNo))
 		{
 			return false;
 		}
 
-		CreditCardIssuer cc = CreditCardIssuer.gleanCompany(card);
+		CreditCardIssuer cc = CreditCardIssuer.gleanIssuer(new CreditCard(cardNo));
 		if (cc == null)
 			return false;
 
@@ -64,7 +72,7 @@ public class CreditCard implements Serializable
 	 * @param cardNumber Credit Card Number.
 	 * @return Whether the card number passes the luhnCheck.
 	 */
-	protected static boolean luhnCheck(String cardNumber)
+	public static boolean luhnCheck(String cardNumber)
 	{
 		// number must be validated as 0..9 numeric first!!
 		int digits = cardNumber.length();
@@ -96,7 +104,7 @@ public class CreditCard implements Serializable
 		return (sum == 0) ? false : (sum % 10 == 0);
 	}
 
-	boolean isValidCVV(String value)
+	public boolean isValidCVV(String value)
 	{
 		if (Strings.isBlank(value))
 			return false;
@@ -134,11 +142,6 @@ public class CreditCard implements Serializable
 		return rate.calculateMerchantFee(unpaid);
 	}
 
-	public static long getSerialversionuid()
-	{
-		return serialVersionUID;
-	}
-
 	public CreditCardIssuer getCreditCardIssuer()
 	{
 		return creditCardIssuer;
@@ -149,19 +152,35 @@ public class CreditCard implements Serializable
 		return cardNo;
 	}
 
+	/**
+	 * @return the card no. with a space inserted every 4 characters
+	 * (from left to right) to make it easy to read.
+	 */
+	public String getFormattedCardNo()
+	{
+		String formatted = "";
+		
+		for (int i = 0; i< this.cardNo.length(); i++)
+		{
+			formatted += this.cardNo.charAt(i);
+			if ((i > 0) && (((i+1) % 4) == 0))
+				formatted += " ";
+		}
+		return formatted.trim();
+	}
 	public void setCardNo(String cardNo)
 	{
 		this.cardNo = cardNo;
 
 		if (cardNo != null)
 		{
-			this.cardNo = cardNo.trim();
-			String stripped = getStrippedCardNo();
+			this.cardNo = getStrippedCardNo();
 
-			if (stripped.length() > 4)
-				this.last4Digits = stripped.substring(stripped.length() - 4);
+			if (cardNo.length() > 4)
+				this.last4Digits = cardNo.substring(cardNo.length() - 4);
+			
+			this.creditCardIssuer = CreditCardIssuer.gleanIssuer(this);
 		}
-
 	}
 
 	public String getCVV()

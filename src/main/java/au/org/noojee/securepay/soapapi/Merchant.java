@@ -8,11 +8,15 @@ public interface Merchant
 	String getPassword();
 
 	String getPeriodicBaseURL();
+	
+	String getPaymentBaseURL();
 
 	/**
 	 * Return you timezone offset from GMT in minutes.
 	 * @return
 	 */
 	int getZoneOffsetMinutes();
+
+	
 
 }
