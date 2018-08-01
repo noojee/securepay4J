@@ -6,7 +6,7 @@ import java.util.Random;
 
 import org.apache.logging.log4j.util.Strings;
 import org.bouncycastle.crypto.generators.BCrypt;
-import org.javamoney.moneta.Money;
+import org.joda.money.Money;
 
 public class CreditCard 
 {

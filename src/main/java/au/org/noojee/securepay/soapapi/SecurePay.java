@@ -4,23 +4,16 @@ import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Locale;
 import java.util.UUID;
 
-import javax.money.CurrencyUnit;
-import javax.money.Monetary;
-import javax.money.format.AmountFormatQueryBuilder;
-import javax.money.format.MonetaryAmountFormat;
-import javax.money.format.MonetaryFormats;
-
-import org.javamoney.moneta.Money;
-import org.javamoney.moneta.format.CurrencyStyle;
+import org.joda.money.CurrencyUnit;
+import org.joda.money.Money;
 
 public class SecurePay
 {
 	final String API_VERSION = "spxml-4.2";
 
-	static final CurrencyUnit currencyUnit = Monetary.getCurrency(Locale.getDefault());
+	static final CurrencyUnit currencyUnit = CurrencyUnit.AUD;
 
 	private Merchant merchant;
 
@@ -210,7 +203,7 @@ public class SecurePay
 			Money amount)
 	{
 
-		Money amountInCents = amount.multiply(100);
+		Money amountInCents = amount.multipliedBy(100);
 
 		String request = getXMLHeader()
 				
@@ -221,7 +214,7 @@ public class SecurePay
 				+ " 		<Txn ID=\"1\">\n" 
 				+ "		 	<txnType>0</txnType>\n" 
 				+ " 			<txnSource>23</txnSource>\n" 
-				+ " 			<amount>" + format(amountInCents, "0") + "</amount>\n" 
+				+ " 			<amount>" + formatNoDecimals(amountInCents) + "</amount>\n" 
 				+ " 			<recurring>no</recurring>\n" 
 				+ " 			<currency>AUD</currency>\n" 
 				+ " 			<purchaseOrderNo>" + transactionReference + "</purchaseOrderNo>\n" 
@@ -241,7 +234,7 @@ public class SecurePay
 	String generateDebitPayorRequest(String cardId, String transactionReference, Money amount)
 	{
 
-		Money amountInCents = amount.multiply(100);
+		Money amountInCents = amount.multipliedBy(100);
 
 		String request = getXMLHeader()
 				+ " <RequestType>Periodic</RequestType>\n"
@@ -251,7 +244,7 @@ public class SecurePay
 				+ " 			<actionType>trigger</actionType>\n"
 				+ " 			<transactionReference>" + transactionReference + "</transactionReference>\n"
 				+ " 			<clientID>" + cardId + "</clientID>\n"
-				+ " 			<amount>" + format(amountInCents, "0") + "</amount>\n"
+				+ " 			<amount>" + formatNoDecimals(amountInCents) + "</amount>\n"
 				+ " 		</PeriodicItem>\n"
 				+ " 	</PeriodicList>\n"
 				+ " </Periodic>\n"
@@ -369,25 +362,30 @@ public class SecurePay
 
 	public static Money asMoney(double value)
 	{
-		return Money.of(value, currencyUnit);
+		return Money.of(currencyUnit, value);
 	}
 
 	public static Money asMoney(String value)
 	{
-		return Money.of(new BigDecimal(value), currencyUnit);
+		return Money.of(currencyUnit, new BigDecimal(value));
 	}
 
-	private String format(Money money, String pattern)
+	private String formatNoDecimals(Money money)
 	{
-		MonetaryAmountFormat format = MonetaryFormats.getAmountFormat(
-				AmountFormatQueryBuilder.of(Locale.ENGLISH)
-						.set(CurrencyStyle.NAME).set("pattern", pattern).build());
+//		MonetaryAmountFormat format = MonetaryFormats.getAmountFormat(
+//				AmountFormatQueryBuilder.of(Locale.ENGLISH)
+//						.set(CurrencyStyle.NAME).set("pattern", pattern).build());
+//		
+		
+//		
+		
 
 		String result;
 		if (money == null)
 			result = "";
 		else
-			result = format.format(money);
+			result = "" + money.getAmountMajorLong();
+
 		return result;
 
 	}

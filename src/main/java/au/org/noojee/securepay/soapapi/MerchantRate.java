@@ -1,6 +1,6 @@
 package au.org.noojee.securepay.soapapi;
 
-import org.javamoney.moneta.Money;
+import org.joda.money.Money;
 
 public interface MerchantRate 
 {
