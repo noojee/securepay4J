@@ -2,6 +2,7 @@ package au.org.noojee.securepay.soapapi;
 
 import java.security.SecureRandom;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.Random;
 
 import org.apache.logging.log4j.util.Strings;
@@ -212,9 +213,8 @@ public class CreditCard
 
 	public void generateCardID()
 	{
-		this.cardID = BCrypt
-				.generate(BCrypt.passwordToByteArray(this.getStrippedCardNo().toCharArray()), getNextSalt(), 4)
-				.toString();
+		this.cardID = Arrays.toString(BCrypt
+				.generate(BCrypt.passwordToByteArray(this.getStrippedCardNo().toCharArray()), getNextSalt(), 4));
 	}
 
 	/**
@@ -286,5 +286,51 @@ public class CreditCard
 	{
 		return cardNo == null ? "" : cardNo.replace(" ", "");
 	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode()
+	{
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((cardID == null) ? 0 : cardID.hashCode());
+		result = prime * result + ((creditCardIssuer == null) ? 0 : creditCardIssuer.hashCode());
+		result = prime * result + ((expiryMonth == null) ? 0 : expiryMonth.hashCode());
+		result = prime * result + ((expiryYear == null) ? 0 : expiryYear.hashCode());
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj)
+	{
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		CreditCard other = (CreditCard) obj;
+		if (cardID == null)
+		{
+			if (other.cardID != null)
+				return false;
+		}
+		else if (!cardID.equals(other.cardID))
+			return false;
+		if (creditCardIssuer != other.creditCardIssuer)
+			return false;
+		if (expiryMonth != other.expiryMonth)
+			return false;
+		if (expiryYear != other.expiryYear)
+			return false;
+		return true;
+	}
+	
+	
 
 }
