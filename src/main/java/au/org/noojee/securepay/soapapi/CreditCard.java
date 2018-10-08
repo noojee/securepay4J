@@ -9,9 +9,10 @@ import org.apache.logging.log4j.util.Strings;
 import org.bouncycastle.crypto.generators.BCrypt;
 import org.joda.money.Money;
 
-public class CreditCard 
+public class CreditCard
 {
 	private static final Random RANDOM = new SecureRandom();
+	private final static char[] hexArray = "0123456789ABCDEF".toCharArray();
 
 	private CreditCardIssuer creditCardIssuer;
 
@@ -30,12 +31,11 @@ public class CreditCard
 	 * gateway.
 	 */
 	private String cardID;
-	
-	
+
 	public CreditCard()
 	{
 	}
-	
+
 	public CreditCard(String cardNo)
 	{
 		setCardNo(cardNo);
@@ -154,21 +154,21 @@ public class CreditCard
 	}
 
 	/**
-	 * @return the card no. with a space inserted every 4 characters
-	 * (from left to right) to make it easy to read.
+	 * @return the card no. with a space inserted every 4 characters (from left to right) to make it easy to read.
 	 */
 	public String getFormattedCardNo()
 	{
 		String formatted = "";
-		
-		for (int i = 0; i< this.cardNo.length(); i++)
+
+		for (int i = 0; i < this.cardNo.length(); i++)
 		{
 			formatted += this.cardNo.charAt(i);
-			if ((i > 0) && (((i+1) % 4) == 0))
+			if ((i > 0) && (((i + 1) % 4) == 0))
 				formatted += " ";
 		}
 		return formatted.trim();
 	}
+
 	public void setCardNo(String cardNo)
 	{
 		this.cardNo = cardNo;
@@ -179,7 +179,7 @@ public class CreditCard
 
 			if (cardNo.length() > 4)
 				this.last4Digits = cardNo.substring(cardNo.length() - 4);
-			
+
 			this.creditCardIssuer = CreditCardIssuer.gleanIssuer(this);
 		}
 	}
@@ -213,8 +213,33 @@ public class CreditCard
 
 	public void generateCardID()
 	{
-		this.cardID = Arrays.toString(BCrypt
-				.generate(BCrypt.passwordToByteArray(this.getStrippedCardNo().toCharArray()), getNextSalt(), 4));
+		this.cardID = CreditCard.generateCardID(this.cardNo);
+	}
+
+	static String generateCardID(String cardNo)
+	{
+		String generatedCardID = bytesToHex(BCrypt
+				.generate(BCrypt.passwordToByteArray(_getStrippedCardNo(cardNo).toCharArray()), getNextSalt(), 4));
+
+		// remove spaces as they are not allowed.
+		generatedCardID = generatedCardID.replaceAll(" ", "");
+
+		// Card ID may not be more than 20 chars
+		generatedCardID = generatedCardID.substring(0, Math.min(20, generatedCardID.length()));
+
+		return generatedCardID;
+	}
+
+	private static String bytesToHex(byte[] bytes)
+	{
+		char[] hexChars = new char[bytes.length * 2];
+		for (int j = 0; j < bytes.length; j++)
+		{
+			int v = bytes[j] & 0xFF;
+			hexChars[j * 2] = hexArray[v >>> 4];
+			hexChars[j * 2 + 1] = hexArray[v & 0x0F];
+		}
+		return new String(hexChars);
 	}
 
 	/**
@@ -266,7 +291,6 @@ public class CreditCard
 
 	}
 
-
 	public void setExpiryMonth(CCMonth expiryMonth)
 	{
 		this.expiryMonth = expiryMonth;
@@ -282,12 +306,18 @@ public class CreditCard
 		CVV = cVV;
 	}
 
-	public String getStrippedCardNo()
+	private static String _getStrippedCardNo(String cardNo)
 	{
 		return cardNo == null ? "" : cardNo.replace(" ", "");
 	}
 
-	/* (non-Javadoc)
+	public String getStrippedCardNo()
+	{
+		return _getStrippedCardNo(cardNo);
+	}
+
+	/*
+	 * (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */
 	@Override
@@ -302,7 +332,8 @@ public class CreditCard
 		return result;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
@@ -330,7 +361,5 @@ public class CreditCard
 			return false;
 		return true;
 	}
-	
-	
 
 }

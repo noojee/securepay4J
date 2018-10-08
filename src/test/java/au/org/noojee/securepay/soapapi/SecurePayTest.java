@@ -21,11 +21,18 @@ public class SecurePayTest
 		card.setCardNo("4444333322221111");
 		card.setExpiry(CCYear._2019, CCMonth.AUG);
 		card.generateCardID();
+		System.out.println("CardID:" + card.getCardID());
+		
+		CreditCard card2 = new CreditCard();
+		card2.setCardNo("4444333322221112");
+		card2.setExpiry(CCYear._2019, CCMonth.AUG);
+		card2.generateCardID();
+		System.out.println("CardID:" + card2.getCardID());
+
 		
 		
 		try
 		{
-			System.out.println("CardID:" + card.getCardID());
 			securePay.storeCard(card);
 			
 			// Change the expiry date.
