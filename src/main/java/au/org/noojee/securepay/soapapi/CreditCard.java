@@ -2,7 +2,6 @@ package au.org.noojee.securepay.soapapi;
 
 import java.security.SecureRandom;
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.Random;
 
 import org.apache.logging.log4j.util.Strings;
